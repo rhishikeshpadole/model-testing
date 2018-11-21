@@ -1,0 +1,69 @@
+import numpy as np 
+import pandas as pd
+def model_report1(df,y):
+    dummies = pd.get_dummies(df.drop(y, axis=1))
+    dummies[y] = df[y]
+    from sklearn.model_selection import train_test_split
+    train, test = train_test_split(dummies, test_size=0.3, random_state=100)
+
+    train_x = train.drop(y, axis=1)
+    train_y = train[y]
+    test_x = test.drop(y, axis=1)
+    test_y = test[y]
+    
+    
+    from sklearn.tree import DecisionTreeClassifier
+    model1 = DecisionTreeClassifier(random_state=100)
+    model1.fit(train_x, train_y)
+    test_pred1 = model1.predict(test_x)
+
+
+    from sklearn.metrics import confusion_matrix
+    tn1, fp1, fn1, tp1 = confusion_matrix(test_y,
+                                  test_pred1).ravel()
+    accuracy1 = (tp1+tn1)/(tp1+tn1+fp1+fn1)*100
+    sensitivity1 = (tp1)/(tp1+fn1)*100
+    specificity1 = (tn1)/(fp1+tn1)*100
+    
+    from sklearn.ensemble import RandomForestClassifier
+    model2 = RandomForestClassifier(random_state=100)
+    model2.fit(train_x, train_y)
+    test_pred2 = model2.predict(test_x)
+
+    from sklearn.metrics import confusion_matrix
+    tn2, fp2, fn2, tp2 = confusion_matrix(test_y,
+                                  test_pred2).ravel()
+    accuracy2 = (tp2+tn2)/(tp2+tn2+fp2+fn2)*100
+    sensitivity2 = (tp2)/(tp2+fn2)*100
+    specificity2 = (tn2)/(fp2+tn2)*100
+    
+    from sklearn.ensemble import AdaBoostClassifier
+
+    model3 = AdaBoostClassifier(random_state=100)
+    model3.fit(train_x, train_y)
+    test_pred3 = model3.predict(test_x)
+
+    from sklearn.metrics import confusion_matrix
+    tn3, fp3, fn3, tp3 = confusion_matrix(test_y,
+                                  test_pred3).ravel()
+    accuracy3 = (tp3+tn3)/(tp3+tn3+fp3+fn3)*100
+    sensitivity3 = (tp3)/(tp3+fn3)*100
+    specificity3 = (tn3)/(fp3+tn3)*100
+    
+    df1 = pd.DataFrame({pd.Series : [tp1,tn1,fp1,fn1, accuracy1, sensitivity1,specificity1]})
+    df2 = pd.DataFrame({pd.Series : [tp2,tn2,fp2,fn2, accuracy2, sensitivity2,specificity2]})
+    df3 = pd.DataFrame({pd.Series : [tp3,tn3,fp3,fn3, accuracy3, sensitivity3,specificity3]}) 
+    
+    a = {'Decision_tree':tp1,'Random_forest':tp2,'Adaboost':tp3}
+    b = {'Decision_tree':tn1,'Random_forest':tn2,'Adaboost':tn3}
+    c = {'Decision_tree':fp1,'Random_forest':fp2,'Adaboost':fp3}
+    d = {'Decision_tree':fn1,'Random_forest':fn2,'Adaboost':fn3}
+    e = {'Decision_tree':accuracy1,'Random_forest':accuracy2,'Adaboost':accuracy3}
+    f = {'Decision_tree':sensitivity1,'Random_forest':sensitivity2,'Adaboost':sensitivity3}
+    g = {'Decision_tree':specificity1,'Random_forest':specificity2,'Adaboost':specificity3}
+    
+    df = pd.DataFrame(columns=['Decision_tree','Random_forest','Adaboost'])
+    for i in [a,b,c,d,e,f,g]:
+        df = df.append(i, ignore_index=True)
+    df.index = ['tp','tn','fp','fn','accuracy','sensitivity','specificity']
+    return df
