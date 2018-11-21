@@ -1,0 +1,44 @@
+import pandas as pd
+import numpy as np
+hr = pd.read_csv('D:/Downloaded rcodes and datasets/HR Analytics.csv')
+
+# creating dummy variables 
+hr_dummies = pd.get_dummies(hr.drop('Attrition', axis=1)) 
+hr_dummies['Attrition'] = hr["Attrition"]
+
+# Standardizing the dummy dataset
+from sklearn.preprocessing import StandardScaler
+scaler = StandardScaler()
+hr_scaled = scaler.fit_transform(hr_dummies.drop('Attrition', axis=1))
+hr_scaled = pd.DataFrame(hr_scaled, columns = hr_dummies.drop('Attrition', axis=1).columns)
+hr_scaled['Attrition'] = hr['Attrition']
+
+
+# Splitting the data into train and test
+from sklearn.model_selection import train_test_split
+train, test = train_test_split(hr_scaled, test_size = 0.3, random_state = 100)
+
+train_x = train.drop('Attrition', axis=1)
+train_y = train["Attrition"]
+test_x = test.drop('Attrition', axis=1)
+test_y = test["Attrition"]
+
+# KNN algo in for loop
+
+
+new_df =  pd.DataFrame(columns=['actual','predicted'])
+
+for j in test.index.tolist():
+    df = pd.Series(euclidean_distances([test_x.loc[j]], train_x).flatten(), index=train_x.index)
+    indices = df.sort_values().head().index
+    kl = pd.DataFrame(columns=['index','pred'])
+    for i in indices:
+        s = hr_scaled.iloc[i,-1]
+        sd = {'index':i, 'pred':s}
+        kl = kl.append(sd, ignore_index=True)
+    predicted = kl["pred"].value_counts().index.tolist()[0]
+    actual = test["Attrition"].loc[j]
+    ol = {'actual':actual,'predicted':predicted}
+    new_df = new_df.append(ol, ignore_index=True)
+    new_df["status"] = new_df["actual"] == new_df["predicted"] 
+    new_df["status"].sum()/new_df.shape[0]*100
